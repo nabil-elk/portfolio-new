@@ -4,6 +4,7 @@ import SectionHeading from './section-heading'
 import { useSectionInView } from '@/lib/hooks';
 import { FaPaperPlane } from 'react-icons/fa';
 import { motion } from "framer-motion";
+
 import { sendEmail } from '@/actions/sendEmail';
 
 export default function Contact() {

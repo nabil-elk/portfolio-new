@@ -1,41 +1,49 @@
 "use server";
 
 import { Resend } from "resend";
+import { validateString, getErrorMessage } from "@/lib/utils";
+import ContactFormEmail from "@/email/contact-form-email";
 
-// const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = new Resend(process.env.RESEND_API_KEY);
 
-// const validateString =( value: unknown, maxLength: number) => {
-//     if (!value || typeof value !== "string" || value.length > maxLength) {
-//        return false;
-//     }
+export const sendEmail = async (formData: FormData) => {
+  const senderEmail = formData.get("senderEmail");
+  const message = formData.get("message");
 
-//     return true;
-// }
+  
 
-// export const sendEmail = async (formData: FormData) => {
-//     const senderEmail = formData.get('email');
-//     const message = formData.get('message');
+  // simple server-side validation
+  if (!validateString(senderEmail, 500)) {
+    return {
+      error: "Invalid sender email",
+    };
+  }
+  if (!validateString(message, 5000)) {
+    return {
+      error: "Invalid message",
+    };
+  }
 
-//     // simple server side validation 
+  let data;
+  try {
+    data = await resend.emails.send({
+      from: "Contact Form <onboarding@resend.dev>",
+      to: "n.elkaddioui@gmail.com",
+      subject: "Message from contact form",
+      reply_to: senderEmail as string,
+      react: ContactFormEmail({ msg: message as string, sender: senderEmail as string
 
-//      if (!validateString(senderEmail, 500)) {
-//         return {
-//             error: "Invalid sender Email"
-//         }
-//      }
+      
+      }),
+    
+    });
+  } catch (error: unknown) {
+    return {
+      error: getErrorMessage(error),
+    };
+  }
 
-//      if (!validateString(message, 5000)) {
-//         return {
-//             error: "Invalid message"
-//         }
-//      }
-
-//     resend.emails.send({
-//         from: 'onboarding@resend.dev',
-//         to: "n.elkaddioui@gmail.com",
-//         subject: "Message from Portfolio contact form",
-//         reply_to: senderEmail,
-//         text: message,
-//     })
-
-//   }
+  return {
+    data,
+  };
+};
